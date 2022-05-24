@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Post;
 use App\Category;
+use App\Tag;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,7 @@ class PostController extends Controller
                 'max:100'
             ],
             'category_id'  => 'required|exists:App\Category,id',
+            'tags'          => 'exists:App\Tag,id'
         ];
     }
 
@@ -56,7 +58,7 @@ class PostController extends Controller
             $posts->where('category_id', $request->category);
         }
 
-        $posts = $posts->paginate(20);
+        $posts = $posts->paginate(12);
 
         return view('admin.posts.index', [
             'posts'         => $posts,
@@ -74,8 +76,12 @@ class PostController extends Controller
     public function create()
     {
         $categories = Category::all();
+        $tags = Tag::all();
 
-        return view('admin.posts.create', compact('categories'));
+        return view('admin.posts.create', [
+            'categories' => $categories,
+            'tags' => $tags,
+        ]);
     }
 
     /**
@@ -91,7 +97,23 @@ class PostController extends Controller
         $data = $request->all() + [
             'user_id' => Auth::user()->id
         ];
+
+        preg_match_all('/#(\S*)/', $data['content'], $tags_from_content);
+
+        $tagIds = [];
+        foreach($tags_from_content[1] as $tag) {
+            $newTag = Tag::create([
+                'name'  => $tag,
+                'slug'  => $tag
+            ]);
+
+            $tagIds[] = $newTag->id;
+        }
+
+        $data['tags'] = $tagIds;
+
         $post = Post::create($data);
+        $post->tags()->attach($data['tags']);
 
         return redirect()->route('admin.posts.show', $post->slug);
     }
@@ -118,10 +140,12 @@ class PostController extends Controller
         if (Auth::user()->id !== $post->user_id) abort(403);
 
         $categories = \App\Category::all();
+        $tags = \App\Tag::all();
 
         return view('admin.posts.edit', [
             'post'          => $post,
-            'categories'    => $categories
+            'categories'    => $categories,
+            'tags'          => $tags
         ]);
     }
 
@@ -136,7 +160,13 @@ class PostController extends Controller
     {
         if (Auth::user()->id !== $post->user_id) abort(403);
 
+
         $request->validate($this->confValidation($post));
+        $data = $request->all();
+
+        $post->update($data);
+        $post->tags()->sync($data['tags']);
+
 
         $post->update($request->all());
 
@@ -153,8 +183,9 @@ class PostController extends Controller
     {
         if (Auth::user()->id !== $post->user_id) abort(403);
 
+        $post->tags()->sync([]);
         $post->delete();
 
-        return redirect()->route('admin.posts.index');
+        return redirect()->route('admin.posts.index')->with('status', "Post $post->title deleted");
     }
 }

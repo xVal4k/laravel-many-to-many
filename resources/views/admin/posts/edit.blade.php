@@ -4,11 +4,11 @@
 
 @section('pageMain')
     <div class="container py-5">
-        <div class="row justify-content-center">
+        <div class="row justify-content-center text-white">
             <div class="col-8">
-                <form method="POST" action="{{ route('admin.posts.store') }}">
+                <form method="POST" action="{{ route('admin.posts.update', $post->slug) }}">
                     @csrf
-
+                    @method('PUT')
                     <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
                         <input type="text" class="form-control" id="title" name="title"
@@ -19,9 +19,22 @@
                     @enderror
                     <div class="mb-3">
                         <label for="content" class="form-label">Content</label>
-                        <textarea class="form-control" id="content" rows="3" name="content">{{ old('content', $post->content) }}</textarea>
+                        <textarea class="form-control" id="content" rows="5" name="content">{{ old('content', $post->content) }}</textarea>
                     </div>
                     @error('content')
+                        <div class="alert alert-danger">{{ $message }}</div>
+                    @enderror
+                    <div class="mb-3">
+                        <fieldset>
+                            <p>Tags</p>
+                            @foreach ($tags as $tag)
+                                <input type="checkbox" name="tags[]" id="tag-{{ $tag->id }}"
+                                    value="{{ $tag->id }}" @if (in_array($tag->id, old('tags', $post->tags->pluck('id')->all()))) checked @endif>
+                                <label for="tag-{{ $tag->id }}">{{ $tag->name }}</label>
+                            @endforeach
+                        </fieldset>
+                    </div>
+                    @error('tags')
                         <div class="alert alert-danger">{{ $message }}</div>
                     @enderror
                     <div class="mb-3">
@@ -32,16 +45,18 @@
                     @error('image')
                         <div class="alert alert-danger">{{ $message }}</div>
                     @enderror
-                    <select class="form-select" aria-label="Default select example" name="category_id" id="category">
-                        <option value="">Select a category</option>
+                    <div class="mb-3">
+                        <select class="form-select" aria-label="Default select example" name="category_id" id="category">
+                            <option value="">Select a category</option>
 
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}"
-                                {{ old('category_id', $post->category_id) == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}"
+                                    {{ old('category_id', $post->category_id) == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     @error('category_id')
                         <div class="alert alert-danger">{{ $message }}</div>
                     @enderror
@@ -49,7 +64,7 @@
                         <label for="slug" class="form-label">Slug</label>
                         <input type="text" class="form-control" id="slug" name="slug"
                             value="{{ old('slug', $post->slug) }}">
-                        <button type="button" class="btn btn-primary slug_btn">Generate slug</button>
+                        <button type="button" class="btn btn-primary slug_btn mt-3">Generate slug</button>
                     </div>
                     @error('slug')
                         <div class="alert alert-danger">{{ $message }}</div>
@@ -62,11 +77,6 @@
                     </div>
                 </form>
             </div>
-        </div>
-        <div class="row text-center">
-            <h3 class="my-4"><a class="text-decoration-none" href="{{ route('admin.posts.index') }}">Comics
-                    List</a>
-            </h3>
         </div>
     </div>
 @endsection

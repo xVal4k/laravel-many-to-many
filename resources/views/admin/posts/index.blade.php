@@ -4,17 +4,19 @@
 
 @section('pageMain')
     <div class="container text-center">
-
+        @if (session('status'))
+            <div class="alert alert-warning">{{ session('status') }}</div>
+        @endif
         @if (Route::currentRouteName() == 'admin.posts.index')
-            <form action="" method="get" class="row g-3 mb-3">
+            <form action="" method="get" class="row g-3 my-3 justify-content-center">
 
-                <div class="col-md-10">
-                    <label for="search_str" class="form-label"></label>
+                <div class="col-md-4">
+                    <label for="search_str" class="form-label d-none"></label>
                     <input type="text" class="form-control" id="search_str" name="search_str"
                         value="{{ $request->search_str }}" placeholder="Search String">
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-2">
                     <select class="form-select" aria-label="Default select example" name="category" id="category">
                         <option value="" selected>Select a category</option>
 
@@ -26,8 +28,8 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
-                    <button class="btn btn-primary">Filter</button>
+                <div class="col-md-1">
+                    <button class="btn btn-light">Filter</button>
                 </div>
 
             </form>
@@ -85,11 +87,5 @@
         </div>
 
         {{ $posts->links() }}
-        <h3 class="my-4">
-            <a class="text-decoration-none" href="{{ route('admin.posts.create') }}">Add new post</a>
-        </h3>
-        <h3 class="my-4">
-            <a class="text-decoration-none" href="{{ route('admin.home') }}">Home</a>
-        </h3>
     </div>
 @endsection
