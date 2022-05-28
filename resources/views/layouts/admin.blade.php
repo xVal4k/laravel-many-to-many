@@ -11,7 +11,7 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     {{-- Script link --}}
-    <script src="{{ asset('js/app.js') }}" defer></script>
+    <script src="{{ asset('js/admin.js') }}" defer></script>
 
     <style>
         body {
@@ -53,7 +53,7 @@
             @if (Route::currentRouteName() != 'admin.posts.create')
             <li><a class="dropdown-item" href="{{ route('admin.posts.create') }}">Add new post</a></li>
             @endif
-            <li><a class="dropdown-item" href="#">Categories</a></li>
+            <li><a class="dropdown-item" href="{{ route('admin.categories.index') }}">Categories</a></li>
             <li><a class="dropdown-item" href="#">New category</a></li>
         </ul>
     </div>

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
+    use \App\Traits\searchFilters;
 
     private function confValidation($arg)
     {
@@ -45,20 +46,16 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        $posts = Post::whereRaw('1 = 1');
+        $posts = $this->composeQuery($request);
+
+        $posts = $posts->paginate(20);
+
+        $queries = $request->query();
+        unset($queries['page']);
+        $posts->withPath('?' . http_build_query($queries, '', '&'));
 
         $categories = Category::all();
         $users = User::all();
-
-        if ($request->search_str) {
-            $posts->where('title', 'LIKE', "%$request->search_str%");
-        }
-
-        if ($request->category) {
-            $posts->where('category_id', $request->category);
-        }
-
-        $posts = $posts->paginate(12);
 
         return view('admin.posts.index', [
             'posts'         => $posts,
@@ -98,10 +95,10 @@ class PostController extends Controller
             'user_id' => Auth::user()->id
         ];
 
-        preg_match_all('/#(\S*)/', $data['content'], $tags_from_content);
+        preg_match_all('/#(\S*)\b/', $data['content'], $tags_from_content);
 
         $tagIds = [];
-        foreach($tags_from_content[1] as $tag) {
+        foreach ($tags_from_content[1] as $tag) {
             $newTag = Tag::create([
                 'name'  => $tag,
                 'slug'  => $tag

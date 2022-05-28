@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
+@section('pageMain')
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 card bg-dark text-white">

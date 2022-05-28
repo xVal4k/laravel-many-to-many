@@ -14,10 +14,6 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', function () {
-    return view('guests.home');
-})->name('home');
-
 Auth::routes();
 
 Route::middleware('auth')
@@ -29,4 +25,10 @@ Route::middleware('auth')
         Route::post('/get-slug', 'HomeController@getSlug')->name('getSlug');
         Route::get('/posts/my-posts', 'PostController@userIndex')->name('userIndex');
         Route::resource('/posts', 'PostController');
+        Route::resource('/categories', 'CategoryController');
     });
+
+
+    Route::get("{any?}", function() {
+        return view("guests.home");
+    })->where("any", ".*");
